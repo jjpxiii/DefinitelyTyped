@@ -1,3 +1,5 @@
+/* eslint-disable @definitelytyped/no-self-import -- self-imports in module augmentations aren't self-imports */
+/* eslint-disable @definitelytyped/no-declare-current-package -- The module augmentations are optional */
 /**
  * These are types for things that are present in the upcoming React 18 release.
  *
@@ -35,3 +37,49 @@ declare module "react" {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface CacheSignal extends AbortSignal {}
 }
+
+declare const POSTPONED_STATE_SIGIL: unique symbol;
+declare module "react-dom/static" {
+    interface PostponedState {
+        [POSTPONED_STATE_SIGIL]: never;
+    }
+
+    interface ResumeOptions {
+        nonce?: string;
+        signal?: AbortSignal;
+        onError?: (error: unknown) => string | undefined | void;
+    }
+
+    interface PrerenderResult {
+        postponed: null | PostponedState;
+    }
+    function resumeAndPrerender(
+        children: React.ReactNode,
+        postponedState: PostponedState,
+        options?: ResumeOptions,
+    ): Promise<PrerenderResult>;
+
+    interface PrerenderToNodeStreamResult {
+        postponed: null | PostponedState;
+    }
+    function resumeAndPrerenderToNodeStream(
+        children: React.ReactNode,
+        postponedState: PostponedState,
+        options?: ResumeOptions,
+    ): Promise<PrerenderToNodeStreamResult>;
+}
+
+import { PostponedState, ResumeOptions } from "react-dom/static";
+declare module "react-dom/server" {
+    function resume(
+        children: React.ReactNode,
+        postponedState: PostponedState,
+        options?: ResumeOptions,
+    ): Promise<ReactDOMServerReadableStream>;
+    function resumeToPipeableStream(
+        children: React.ReactNode,
+        postponedState: PostponedState,
+        options?: ResumeOptions,
+    ): Promise<PipeableStream>;
+}
+
